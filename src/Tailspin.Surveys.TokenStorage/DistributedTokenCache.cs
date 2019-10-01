@@ -20,7 +20,7 @@ namespace Tailspin.Surveys.TokenStorage
         private ILogger _logger;
         private IDistributedCache _distributedCache;
         private IDataProtector _protector;
-        private string _cacheKey;
+        private readonly string _cacheKey;
 
         /// <summary>
         /// Initializes a new instance of <see cref="Tailspin.Surveys.TokenStorage.DistributedTokenCache"/>

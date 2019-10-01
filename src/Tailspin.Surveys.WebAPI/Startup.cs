@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -24,6 +25,9 @@ namespace Tailspin.Surveys.WebAPI
     /// </summary>
     public class Startup
     {
+        private readonly ILoggerFactory loggerFactory;
+        private readonly IHostingEnvironment env;
+
         public Startup(IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             InitializeLogging(loggerFactory);
@@ -40,6 +44,9 @@ namespace Tailspin.Surveys.WebAPI
             builder.AddEnvironmentVariables();
 
             Configuration = builder.Build();
+
+            this.loggerFactory = loggerFactory;
+            this.env = env;
         }
 
         public IConfigurationRoot Configuration { get; }
@@ -48,6 +55,20 @@ namespace Tailspin.Surveys.WebAPI
         // Use this method to add services to the container
         public void ConfigureServices(IServiceCollection services)
         {
+            var configOptions = new AppConfiguration.ConfigurationOptions();
+            Configuration.Bind(configOptions);
+
+            services.AddAuthentication().AddJwtBearer(cfg =>
+            {
+                cfg.Audience = configOptions.AzureAd.WebApiResourceId;
+                cfg.Authority = Constants.AuthEndpointPrefix;
+                cfg.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = false
+                };
+                cfg.Events = new SurveysJwtBearerEvents(loggerFactory.CreateLogger<SurveysJwtBearerEvents>());
+            });
+
             services.AddAuthorization(options =>
             {
                 options.AddPolicy(PolicyNames.RequireSurveyCreator,
@@ -91,30 +112,20 @@ namespace Tailspin.Surveys.WebAPI
         }
 
         // Configure is called after ConfigureServices is called.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ApplicationDbContext dbContext, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
-            var configOptions = new AppConfiguration.ConfigurationOptions();
-            Configuration.Bind(configOptions);
-
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-
                 app.UseDatabaseErrorPage();
             }
 
-            app.UseJwtBearerAuthentication(new JwtBearerOptions {
-                Audience = configOptions.AzureAd.WebApiResourceId,
-                Authority = Constants.AuthEndpointPrefix,
-                TokenValidationParameters = new TokenValidationParameters {
-                    ValidateIssuer = false
-                },
-                Events= new SurveysJwtBearerEvents(loggerFactory.CreateLogger<SurveysJwtBearerEvents>())
-            });
-            
+            app.UseAuthentication();
+
             // Add MVC to the request pipeline.
             app.UseMvc();
         }
+
         private void InitializeLogging(ILoggerFactory loggerFactory)
         {
             loggerFactory.AddDebug(LogLevel.Information);

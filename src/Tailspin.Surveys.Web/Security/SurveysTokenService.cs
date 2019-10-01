@@ -70,6 +70,7 @@ namespace Tailspin.Surveys.Web.Security
                 _logger.BearerTokenAcquisitionStarted(resource, userName, issuerValue);
                 var authContext = await CreateAuthenticationContext(user)
                     .ConfigureAwait(false);
+
                 var result = await authContext.AcquireTokenSilentAsync(
                     resource,
                     await _credentialService.GetCredentialsAsync().ConfigureAwait(false),
@@ -77,7 +78,6 @@ namespace Tailspin.Surveys.Web.Security
                     .ConfigureAwait(false);
 
                 _logger.BearerTokenAcquisitionSucceeded(resource, userName, issuerValue);
-
                 return result.AccessToken;
             }
             catch (AdalException ex)
@@ -102,19 +102,11 @@ namespace Tailspin.Surveys.Web.Security
         /// in a <see cref="TokenCache"/> to be used later (by calls to GetTokenForWebApiAsync).
         /// </summary>
         /// <param name="claimsPrincipal">A <see cref="ClaimsPrincipal"/> for the signed in user</param>
-        /// <param name="authorizationCode">a string authorization code obtained when the user signed in</param>
-        /// <param name="redirectUri">The Uri of the application requesting the access token</param>
         /// <param name="resource">The resouce identifier of the target resource</param>
         /// <returns>A <see cref="System.Threading.Tasks.Task{Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationResult}"/>.</returns>
-        public async Task<AuthenticationResult> RequestTokenAsync(
-            ClaimsPrincipal claimsPrincipal,
-            string authorizationCode,
-            string redirectUri,
-            string resource)
+        public async Task<AuthenticationResult> RequestTokenAsync(ClaimsPrincipal claimsPrincipal, string resource)
         {
             Guard.ArgumentNotNull(claimsPrincipal, nameof(claimsPrincipal));
-            Guard.ArgumentNotNullOrWhiteSpace(authorizationCode, nameof(authorizationCode));
-            Guard.ArgumentNotNullOrWhiteSpace(redirectUri, nameof(redirectUri));
             Guard.ArgumentNotNullOrWhiteSpace(resource, nameof(resource));
 
             try
@@ -124,11 +116,9 @@ namespace Tailspin.Surveys.Web.Security
                 _logger.AuthenticationCodeRedemptionStarted(userId, issuerValue, resource);
                 var authenticationContext = await CreateAuthenticationContext(claimsPrincipal)
                     .ConfigureAwait(false);
-                var authenticationResult = await authenticationContext.AcquireTokenByAuthorizationCodeAsync(
-                    authorizationCode,
-                    new Uri(redirectUri),
-                    await _credentialService.GetCredentialsAsync().ConfigureAwait(false),
-                    resource)
+
+                var credential = await _credentialService.GetCredentialsAsync().ConfigureAwait(false);
+                var authenticationResult = await authenticationContext.AcquireTokenAsync(resource, credential.ClientCredential)
                     .ConfigureAwait(false);
 
                 _logger.AuthenticationCodeRedemptionCompleted(userId, issuerValue, resource);

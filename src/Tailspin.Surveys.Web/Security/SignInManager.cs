@@ -2,13 +2,12 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Tailspin.Surveys.Web.Logging;
@@ -52,9 +51,9 @@ namespace Tailspin.Surveys.Web.Security
             {
                 _logger.SignoutStarted(userObjectIdentifier, issuer);
 
-                await _httpContext.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                await _httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
-                await _httpContext.Authentication.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme,
+                await _httpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme,
                     new AuthenticationProperties { RedirectUri = redirectUrl });
 
                 _logger.SignoutCompleted(userObjectIdentifier, issuer);

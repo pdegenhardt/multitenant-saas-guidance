@@ -14,9 +14,9 @@ namespace Tailspin.Surveys.TokenStorage
 {
     public class DistributedTokenCacheService : TokenCacheService
     {
-        private IHttpContextAccessor _contextAccessor;
-        private IDataProtectionProvider _dataProtectionProvider;
-        private IDistributedCache _distributedCache;
+        private readonly IHttpContextAccessor _contextAccessor;
+        private readonly IDataProtectionProvider _dataProtectionProvider;
+        private readonly IDistributedCache _distributedCache;
 
         /// <summary>
         /// Initializes a new instance of <see cref="Tailspin.Surveys.TokenStorage.DistributedTokenCacheService"/>

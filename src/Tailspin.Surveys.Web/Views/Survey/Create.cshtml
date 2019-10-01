@@ -4,7 +4,7 @@
 }
 <h2>@ViewData["Title"]</h2>
 
-@Html.Partial("_ValidationPartial")
+@await Html.PartialAsync("_ValidationPartial")
 
 <form asp-action="Create" method="post">
     <div class="form-group">
@@ -17,6 +17,6 @@
         <span asp-validation-for="Title" class="text-danger"></span>
     </div>
     <div class="row">
-        @Html.Partial("_ConfirmPartial")
+        @await Html.PartialAsync("_ConfirmPartial")
     </div>
 </form>

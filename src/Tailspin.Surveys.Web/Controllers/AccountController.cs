@@ -3,9 +3,9 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Tailspin.Surveys.Web.Security;
 
@@ -58,7 +58,7 @@ namespace Tailspin.Surveys.Web.Controllers
         [AllowAnonymous]
         public IActionResult SignUp()
         {
-            var state = new Dictionary<string, string> { { "signup", "true" }};
+            var state = new Dictionary<string, string> { { "signup", "true" } };
             return new ChallengeResult(
                 OpenIdConnectDefaults.AuthenticationScheme,
                 new AuthenticationProperties(state)

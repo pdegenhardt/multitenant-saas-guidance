@@ -13,7 +13,7 @@ namespace Tailspin.Surveys.Web.Security
     /// </summary>
     public class ClientCredentialService : ICredentialService
     {
-        private AdalCredential _credential;
+        private readonly AdalCredential _credential;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Tailspin.Surveys.Web.Security.ClientCredentialService"/>.

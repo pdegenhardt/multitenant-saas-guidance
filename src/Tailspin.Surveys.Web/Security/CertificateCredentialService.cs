@@ -39,8 +39,7 @@ namespace Tailspin.Surveys.Web.Security
                     aadOptions.Asymmetric.StoreLocation,
                     aadOptions.Asymmetric.CertificateThumbprint,
                     aadOptions.Asymmetric.ValidationRequired);
-                string password = null;
-                var certBytes = CertificateUtility.ExportCertificateWithPrivateKey(cert, out password);
+                var certBytes = CertificateUtility.ExportCertificateWithPrivateKey(cert, out string password);
                 return Task.FromResult(new AdalCredential(new ClientAssertionCertificate(aadOptions.ClientId, new X509Certificate2(certBytes, password))));
             });
         }

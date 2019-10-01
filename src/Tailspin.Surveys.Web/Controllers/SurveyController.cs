@@ -6,7 +6,6 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Tailspin.Surveys.Data.DataModels;
@@ -19,6 +18,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using System;
 using System.Linq;
 using Tailspin.Surveys.Web.Security;
+using Microsoft.AspNetCore.Authentication;
 
 namespace Tailspin.Surveys.Web.Controllers
 {
@@ -68,14 +68,14 @@ namespace Tailspin.Surveys.Web.Controllers
                 {
                     // If the user is in the creator role, the view shows a "Create Survey" button.
                     ViewBag.IsUserCreator =
-                        await _authorizationService.AuthorizeAsync(User, PolicyNames.RequireSurveyCreator);
+                        (await _authorizationService.AuthorizeAsync(User, PolicyNames.RequireSurveyCreator)).Succeeded;
                     _logger.GetSurveysForUserOperationSucceeded(actionName, user, issuerValue);
                     return View(result.Item);
                 }
 
                 _logger.GetSurveysForUserOperationFailed(actionName, user, issuerValue, result.StatusCode);
 
-                if (result.StatusCode == (int) HttpStatusCode.Unauthorized)
+                if (result.StatusCode == (int)HttpStatusCode.Unauthorized)
                 {
                     //this should happen if the bearer token validation fails. We wont sign the user out for 403 - since user may have access to some resources and not others
                     return ReAuthenticateUser();
@@ -109,7 +109,7 @@ namespace Tailspin.Surveys.Web.Controllers
                 if (result.Succeeded)
                 {
                     // If the user is an administrator, additional functionality is exposed. 
-                    ViewBag.IsUserAdmin = await _authorizationService.AuthorizeAsync(User, PolicyNames.RequireSurveyAdmin);
+                    ViewBag.IsUserAdmin = (await _authorizationService.AuthorizeAsync(User, PolicyNames.RequireSurveyAdmin)).Succeeded;
                     return View(result.Item);
                 }
 

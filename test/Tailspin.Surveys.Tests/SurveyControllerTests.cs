@@ -27,8 +27,8 @@ namespace MultiTentantSurveyAppTests
     public class SurveyControllerTests
     {
         private ISurveyService _surveyService;
-        private ILogger<SurveyController> _logger;
-        private IAuthorizationService _authorizationService;
+        private readonly ILogger<SurveyController> _logger;
+        private readonly IAuthorizationService _authorizationService;
         private SurveyController _target;
 
         public SurveyControllerTests()
@@ -39,10 +39,12 @@ namespace MultiTentantSurveyAppTests
 
             var services = new ServiceCollection();
             services.AddEntityFrameworkInMemoryDatabase()
-                .AddDbContext<ApplicationDbContext>(options => options.UseInMemoryDatabase());
+                .AddDbContext<ApplicationDbContext>(options => options.UseInMemoryDatabase("TailSpin"));
 
-            _target = new SurveyController(_surveyService, _logger, _authorizationService);
-            _target.TempData = A.Fake<Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary>();
+            _target = new SurveyController(_surveyService, _logger, _authorizationService)
+            {
+                TempData = A.Fake<Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary>()
+            };
         }
 
         [Fact]

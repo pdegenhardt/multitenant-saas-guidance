@@ -6,10 +6,10 @@
 
 <h3 class="alert-danger">Are you sure that you want to publish this survey?</h3>
 
-@Html.Partial("_ValidationPartial")
+@await Html.PartialAsync("_ValidationPartial")
 
 <form asp-action="Publish" method="POST" asp-route-id="@Model.Id">
-    @Html.Partial("_ConfirmPartial")
+    @await Html.PartialAsync("_ConfirmPartial")
 </form>
 
-@Html.Partial("_SurveyDetailPartial", Model)
+@await Html.PartialAsync("_SurveyDetailPartial", Model)
