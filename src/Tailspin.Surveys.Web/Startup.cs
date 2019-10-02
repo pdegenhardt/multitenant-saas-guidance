@@ -21,6 +21,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authentication.OAuth.Claims;
+using Microsoft.Identity.Client;
+using Microsoft.AspNetCore.Authentication;
 
 namespace Tailspin.Surveys.Web
 {
@@ -142,17 +144,17 @@ namespace Tailspin.Surveys.Web
 
             // Register application services.
 
-            // This will register IDistributedCache based token cache which ADAL will use for caching access tokens.
-            services.AddScoped<ITokenCacheService, DistributedTokenCacheService>();
+            // This will register IDistributedCache based token cache which MSAL will use for caching access tokens.
+            services.AddSingleton<ITokenCacheProvider, DistributedTokenCacheProvider>();
 
             services.AddScoped<ISurveysTokenService, SurveysTokenService>();
             services.AddSingleton<HttpClientService>();
 
             // Uncomment the following line to use client certificate credentials.
-            //services.AddSingleton<ICredentialService, CertificateCredentialService>();
+            // services.AddSingleton<ICredentialsProvider, CertificateProvider>();
 
             // Comment out the following line if you are using client certificates.
-            services.AddSingleton<ICredentialService, ClientCredentialService>();
+            services.AddSingleton<ICredentialsProvider, ClientSecretProvider>();
 
             services.AddScoped<ISurveyService, SurveyService>();
             services.AddScoped<IQuestionService, QuestionService>();

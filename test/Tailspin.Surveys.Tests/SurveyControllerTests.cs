@@ -39,7 +39,7 @@ namespace MultiTentantSurveyAppTests
 
             var services = new ServiceCollection();
             services.AddEntityFrameworkInMemoryDatabase()
-                .AddDbContext<ApplicationDbContext>(options => options.UseInMemoryDatabase("TailSpin"));
+                .AddDbContext<ApplicationDbContext>(options => options.UseInMemoryDatabase("TailspinDB"));
 
             _target = new SurveyController(_surveyService, _logger, _authorizationService)
             {

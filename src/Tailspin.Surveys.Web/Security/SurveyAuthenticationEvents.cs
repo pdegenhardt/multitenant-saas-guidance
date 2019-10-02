@@ -240,18 +240,20 @@ namespace Tailspin.Surveys.Web.Security
         {
             var principal = context.Principal;
 
-            //
-            var request = context.HttpContext.Request;
-            var currentUri = UriHelper.BuildAbsolute(request.Scheme, request.Host, request.PathBase, request.Path);
-            var properties = context.Properties;
+            // As AcquireTokenByAuthorizationCodeAsync is asynchronous we want to tell ASP.NET core that we are handing the code
+            // even if it's not done yet, so that it does not concurrently call the Token endpoint. (otherwise there will be a
+            // race condition ending-up in an error from Azure AD telling "code already redeemed")
+            context.HandleCodeRedemption();
 
-            //
+            // 
 
             var surveysTokenService = context.HttpContext.RequestServices.GetService<ISurveysTokenService>();
             try
             {
-                await surveysTokenService.RequestTokenAsync(principal, _adOptions.WebApiResourceId)
+                var result = await surveysTokenService.RequestTokenAsync(principal, context.ProtocolMessage.Code, _adOptions.WebApiResourceId)
                     .ConfigureAwait(false);
+
+                context.HandleCodeRedemption(null, result.IdToken);
             }
             catch
             {

@@ -47,7 +47,7 @@ namespace Tailspin.Surveys.WebAPI.Controllers
             }
 
             // The AuthorizationService uses the policies in the Tailspin.Surveys.Security project
-            if (!(await _authorizationService.AuthorizeAsync(User, survey, Operations.Read)).Succeeded)
+            if (!(await _authorizationService.AuthorizeAsync(User, survey, Operations.Read))?.Succeeded == true)
 
             {
                 return StatusCode(403);
@@ -126,7 +126,7 @@ namespace Tailspin.Surveys.WebAPI.Controllers
             }
 
             // Validate that the current user has Read permissions to this survey.
-            if (!(await _authorizationService.AuthorizeAsync(User, survey, Operations.Read)).Succeeded)
+            if (!(await _authorizationService.AuthorizeAsync(User, survey, Operations.Read))?.Succeeded == true)
 
             {
                 return StatusCode(403);
@@ -195,7 +195,7 @@ namespace Tailspin.Surveys.WebAPI.Controllers
             }
 
             // Validate that the current user has Update permissions to this survey.
-            if (!(await _authorizationService.AuthorizeAsync(User, survey, Operations.Update)).Succeeded)
+            if (!(await _authorizationService.AuthorizeAsync(User, survey, Operations.Update))?.Succeeded == true)
             {
                 return StatusCode(403);
             }
@@ -223,7 +223,7 @@ namespace Tailspin.Surveys.WebAPI.Controllers
             }
 
             // Validate that the current user has Delete permissions to this survey.
-            if (!(await _authorizationService.AuthorizeAsync(User, survey, Operations.Delete)).Succeeded)
+            if (!(await _authorizationService.AuthorizeAsync(User, survey, Operations.Delete))?.Succeeded == true)
             {
                 return StatusCode(403);
             }
@@ -258,7 +258,7 @@ namespace Tailspin.Surveys.WebAPI.Controllers
             }
 
             // Validate that the current user has Update permissions to this survey.
-            if (!(await _authorizationService.AuthorizeAsync(User, survey, Operations.Update)).Succeeded)
+            if (!(await _authorizationService.AuthorizeAsync(User, survey, Operations.Update))?.Succeeded == true)
             {
                 return StatusCode(403);
             }
@@ -314,7 +314,7 @@ namespace Tailspin.Surveys.WebAPI.Controllers
             }
 
             // Validate that the current user has Publish permissions to this survey.
-            if (!(await _authorizationService.AuthorizeAsync(User, survey, Operations.Publish)).Succeeded)
+            if (!(await _authorizationService.AuthorizeAsync(User, survey, Operations.Publish))?.Succeeded == true)
             {
                 return StatusCode(403);
             }
@@ -339,7 +339,7 @@ namespace Tailspin.Surveys.WebAPI.Controllers
             }
 
             // Validate that the current user has UnPublish permissions to this survey.
-            if (!(await _authorizationService.AuthorizeAsync(User, survey, Operations.UnPublish)).Succeeded)
+            if (!(await _authorizationService.AuthorizeAsync(User, survey, Operations.UnPublish))?.Succeeded == true)
             {
                 return StatusCode(403);
             }

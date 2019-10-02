@@ -9,12 +9,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="DistributedTokenCache.cs" />
+    <Compile Remove="DistributedTokenCacheService.cs" />
+    <Compile Remove="ITokenCacheService.cs" />
+    <Compile Remove="TokenCacheService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Tailspin.Surveys.Common\Tailspin.Surveys.Common.csproj" />
     <ProjectReference Include="..\Tailspin.Surveys.Security\Tailspin.Surveys.Security.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="4.4.2" />
+    <PackageReference Include="Microsoft.Identity.Client" Version="4.4.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="2.1.1" />

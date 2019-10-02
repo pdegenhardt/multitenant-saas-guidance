@@ -45,7 +45,7 @@ namespace Tailspin.Surveys.WebAPI.Controllers
                 return NotFound();
             }
 
-            if (!(await _authorizationService.AuthorizeAsync(User, question.Survey, Operations.Update)).Succeeded)
+            if (!(await _authorizationService.AuthorizeAsync(User, question.Survey, Operations.Update))?.Succeeded == true)
             {
                 return StatusCode(403);
             }
@@ -86,7 +86,7 @@ namespace Tailspin.Surveys.WebAPI.Controllers
             }
 
             // The AuthorizationService uses the policies in the Tailspin.Surveys.Security project
-            if (!(await _authorizationService.AuthorizeAsync(User, survey, Operations.Update)).Succeeded)
+            if (!(await _authorizationService.AuthorizeAsync(User, survey, Operations.Update))?.Succeeded == true)
             {
                 return StatusCode(403);
             }
@@ -120,7 +120,7 @@ namespace Tailspin.Surveys.WebAPI.Controllers
                 return NotFound();
             }
 
-            if (!(await _authorizationService.AuthorizeAsync(User, question.Survey, Operations.Update)).Succeeded)
+            if (!(await _authorizationService.AuthorizeAsync(User, question.Survey, Operations.Update))?.Succeeded == true)
             {
                 return StatusCode(403);
             }
@@ -152,7 +152,7 @@ namespace Tailspin.Surveys.WebAPI.Controllers
                 return NotFound();
             }
 
-            if (!(await _authorizationService.AuthorizeAsync(User, question.Survey, Operations.Update)).Succeeded)
+            if (!(await _authorizationService.AuthorizeAsync(User, question.Survey, Operations.Update))?.Succeeded == true)
             {
                 return StatusCode(403);
             }

@@ -6,13 +6,15 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Tailspin.Surveys.Common;
 using Tailspin.Surveys.Common.Configuration;
-using Tailspin.Surveys.TokenStorage;
 using Tailspin.Surveys.Web.Configuration;
 using Tailspin.Surveys.Web.Logging;
-using System.Globalization;
+using Microsoft.Identity.Client;
+using System.Linq;
+using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Http;
+using Tailspin.Surveys.TokenStorage;
 
 namespace Tailspin.Surveys.Web.Security
 {
@@ -22,27 +24,31 @@ namespace Tailspin.Surveys.Web.Security
     public class SurveysTokenService : ISurveysTokenService
     {
         private readonly AzureAdOptions _adOptions;
-        private readonly ITokenCacheService _tokenCacheService;
+        private readonly ICredentialsProvider _credentialsProvider;
         private readonly ILogger _logger;
-        private readonly ICredentialService _credentialService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ITokenCacheProvider _tokenCacheProvider;
+
+        private HttpContext CurrentHttpContext => _httpContextAccessor.HttpContext;
 
         /// <summary>
         /// Initializes a new instance of <see cref="Tailspin.Surveys.Web.Security.SurveysTokenService"/>.
         /// </summary>
         /// <param name="options"></param>
-        /// <param name="tokenCacheService"></param>
-        /// <param name="credentialService"></param>
+        /// <param name="credentialsProvider"></param>
         /// <param name="logger"></param>
-        public SurveysTokenService(
-            IOptions<ConfigurationOptions> options,
-            ITokenCacheService tokenCacheService,
-            ICredentialService credentialService,
-            ILogger<SurveysTokenService> logger)
+        /// <param name="httpContextAccessor"></param>
+        public SurveysTokenService(IOptions<ConfigurationOptions> options,
+                                   ICredentialsProvider credentialsProvider,
+                                   ILogger<SurveysTokenService> logger,
+                                   IHttpContextAccessor httpContextAccessor,
+                                   ITokenCacheProvider tokenCacheProvider)
         {
             _adOptions = options?.Value?.AzureAd;
-            _tokenCacheService = tokenCacheService;
-            _credentialService = credentialService;
+            _credentialsProvider = credentialsProvider;
             _logger = logger;
+            _httpContextAccessor = httpContextAccessor;
+            _tokenCacheProvider = tokenCacheProvider;
         }
 
         /// <summary>
@@ -61,74 +67,61 @@ namespace Tailspin.Surveys.Web.Security
 
         private async Task<string> GetAccessTokenForResourceAsync(string resource, ClaimsPrincipal user)
         {
+            AuthenticationResult authenticationResult = null;
+
             var userId = user.GetObjectIdentifierValue();
+            var tenantId = user.GetTenantIdValue();
             var issuerValue = user.GetIssuerValue();
             var userName = user.Identity?.Name;
+            var scopes = new string[] { resource + "/.default" };
+            var identifier = $"{userId}.{tenantId}";
 
             try
             {
                 _logger.BearerTokenAcquisitionStarted(resource, userName, issuerValue);
-                var authContext = await CreateAuthenticationContext(user)
+
+                var application = BuildConfidentialClientApplication(user);
+                var account = await application.GetAccountAsync(identifier)
                     .ConfigureAwait(false);
 
-                var result = await authContext.AcquireTokenSilentAsync(
-                    resource,
-                    await _credentialService.GetCredentialsAsync().ConfigureAwait(false),
-                    new UserIdentifier(userId, UserIdentifierType.UniqueId))
+                authenticationResult = await application.AcquireTokenSilent(scopes, account).ExecuteAsync()
                     .ConfigureAwait(false);
 
                 _logger.BearerTokenAcquisitionSucceeded(resource, userName, issuerValue);
-                return result.AccessToken;
+                return authenticationResult.AccessToken;
             }
-            catch (AdalException ex)
+            catch (MsalException ex)
             {
                 _logger.BearerTokenAcquisitionFailed(resource, userName, issuerValue, ex);
-                throw new AuthenticationException($"AcquireTokenSilentAsync failed for user: {userId}", ex);
+                throw new AuthenticationException($"AcquireTokenSilent failed for user: {userId}", ex);
             }
-        }
-
-        private async Task<AuthenticationContext> CreateAuthenticationContext(ClaimsPrincipal claimsPrincipal)
-        {
-            Guard.ArgumentNotNull(claimsPrincipal, nameof(claimsPrincipal));
-
-            return new AuthenticationContext(
-                Constants.AuthEndpointPrefix,
-                await _tokenCacheService.GetCacheAsync(claimsPrincipal)
-                .ConfigureAwait(false));
         }
 
         /// <summary>
-        /// This method acquires an access token using an authorization code and ADAL. The access token is then cached
+        /// This method acquires an access token using an AcquireTokenOnBehalfOf. The access token is then cached
         /// in a <see cref="TokenCache"/> to be used later (by calls to GetTokenForWebApiAsync).
         /// </summary>
         /// <param name="claimsPrincipal">A <see cref="ClaimsPrincipal"/> for the signed in user</param>
+        /// <param name="authorizationCode">a string authorization code obtained when the user signed in</param>
         /// <param name="resource">The resouce identifier of the target resource</param>
-        /// <returns>A <see cref="System.Threading.Tasks.Task{Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationResult}"/>.</returns>
-        public async Task<AuthenticationResult> RequestTokenAsync(ClaimsPrincipal claimsPrincipal, string resource)
+        /// <returns>A <see cref="System.Threading.Tasks.Task{AuthenticationResult}"/>.</returns>
+        public async Task<AuthenticationResult> RequestTokenAsync(ClaimsPrincipal claimsPrincipal, string authorizationCode, string resource)
         {
             Guard.ArgumentNotNull(claimsPrincipal, nameof(claimsPrincipal));
+            Guard.ArgumentNotNullOrWhiteSpace(authorizationCode, nameof(authorizationCode));
             Guard.ArgumentNotNullOrWhiteSpace(resource, nameof(resource));
 
+            var scopes = new string[] { resource + "/.default" };
             try
             {
-                var userId = claimsPrincipal.GetObjectIdentifierValue();
-                var issuerValue = claimsPrincipal.GetIssuerValue();
-                _logger.AuthenticationCodeRedemptionStarted(userId, issuerValue, resource);
-                var authenticationContext = await CreateAuthenticationContext(claimsPrincipal)
-                    .ConfigureAwait(false);
-
-                var credential = await _credentialService.GetCredentialsAsync().ConfigureAwait(false);
-                var authenticationResult = await authenticationContext.AcquireTokenAsync(resource, credential.ClientCredential)
-                    .ConfigureAwait(false);
-
-                _logger.AuthenticationCodeRedemptionCompleted(userId, issuerValue, resource);
-                return authenticationResult;
+                var application = BuildConfidentialClientApplication(claimsPrincipal);
+                return await application.AcquireTokenByAuthorizationCode(scopes, authorizationCode).ExecuteAsync().ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 _logger.AuthenticationCodeRedemptionFailed(ex);
                 throw;
-            }
+            }            
         }
 
         /// <summary>
@@ -136,12 +129,35 @@ namespace Tailspin.Surveys.Web.Security
         /// </summary>
         /// <param name="claimsPrincipal">The <see cref="System.Security.Claims.ClaimsPrincipal"/> for the user</param>
         /// <returns>A <see cref="System.Threading.Tasks.Task"/></returns>
-        public async Task ClearCacheAsync(ClaimsPrincipal claimsPrincipal)
+        public async Task ClearCacheAsync(ClaimsPrincipal claimPrincipal)
+        {
+            Guard.ArgumentNotNull(claimPrincipal, nameof(claimPrincipal));
+            await _tokenCacheProvider?.ClearAsync(claimPrincipal);
+        }
+
+        /// <summary>
+        /// Creates an MSAL Confidential client application if needed
+        /// </summary>
+        /// <param name="claimsPrincipal"></param>
+        /// <returns></returns>
+        private IConfidentialClientApplication BuildConfidentialClientApplication(ClaimsPrincipal claimsPrincipal)
         {
             Guard.ArgumentNotNull(claimsPrincipal, nameof(claimsPrincipal));
 
-            await _tokenCacheService.ClearCacheAsync(claimsPrincipal)
-                .ConfigureAwait(false);
+            var request = CurrentHttpContext.Request;
+            var currentUri = UriHelper.BuildAbsolute(request.Scheme, request.Host, request.PathBase, request.Path);
+
+            var application = ConfidentialClientApplicationBuilder.Create(_adOptions.ClientId)
+                .WithRedirectUri(currentUri)
+                .WithAuthority(Constants.AuthEndpointPrefix)
+                .WithCredentials(_credentialsProvider)
+                .Build();
+            
+            // Initialize token cache provider
+            _tokenCacheProvider?.InitializeAsync(application.UserTokenCache, claimsPrincipal);
+
+            return application;
         }
+
     }
 }

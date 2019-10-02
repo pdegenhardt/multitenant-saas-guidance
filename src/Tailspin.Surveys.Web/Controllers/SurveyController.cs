@@ -68,7 +68,7 @@ namespace Tailspin.Surveys.Web.Controllers
                 {
                     // If the user is in the creator role, the view shows a "Create Survey" button.
                     ViewBag.IsUserCreator =
-                        (await _authorizationService.AuthorizeAsync(User, PolicyNames.RequireSurveyCreator)).Succeeded;
+                        (await _authorizationService.AuthorizeAsync(User, PolicyNames.RequireSurveyCreator))?.Succeeded == true;
                     _logger.GetSurveysForUserOperationSucceeded(actionName, user, issuerValue);
                     return View(result.Item);
                 }
@@ -109,7 +109,7 @@ namespace Tailspin.Surveys.Web.Controllers
                 if (result.Succeeded)
                 {
                     // If the user is an administrator, additional functionality is exposed. 
-                    ViewBag.IsUserAdmin = (await _authorizationService.AuthorizeAsync(User, PolicyNames.RequireSurveyAdmin)).Succeeded;
+                    ViewBag.IsUserAdmin = (await _authorizationService.AuthorizeAsync(User, PolicyNames.RequireSurveyAdmin))?.Succeeded == true;
                     return View(result.Item);
                 }
 

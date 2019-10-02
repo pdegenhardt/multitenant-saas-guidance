@@ -27,9 +27,9 @@ namespace Tailspin.Surveys.TokenStorage
         {
             logger.LogTrace("Retrieved all tokens from store for Key: {0}", key);
         }
-        public static void TokensWrittenToStore(this ILogger logger, string clientId, string userId, string resource)
+        public static void TokensWrittenToStore(this ILogger logger, string clientId, string userId)
         {
-            logger.LogTrace("Token states changed for Client: {0} User: {1}  Resource: {2} writing all tokens back to store", clientId, userId, resource);
+            logger.LogTrace("Token states changed for Client: {0} User: {1}  writing all tokens back to store", clientId, userId);
         }
     }
 }

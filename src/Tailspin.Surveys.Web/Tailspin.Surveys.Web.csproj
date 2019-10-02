@@ -10,6 +10,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Security\AdalCredential.cs" />
+    <Compile Remove="Security\AdalCredentialType.cs" />
+    <Compile Remove="Security\AuthenticationContextExtensions.cs" />
+    <Compile Remove="Security\CertificateCredentialService.cs" />
+    <Compile Remove="Security\ClaimActionCollectionMapExtensions.cs" />
+    <Compile Remove="Security\ClientCredentialService.cs" />
+    <Compile Remove="Security\ICredentialService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="wwwroot\**\*;Views\**\*;Areas\**\Views">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
@@ -43,7 +53,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="2.1.1" />
-    <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="4.4.2" />
+    <PackageReference Include="Microsoft.Identity.Client" Version="4.4.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.10" PrivateAssets="All" />
     <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="2.1.1" />
   </ItemGroup>
