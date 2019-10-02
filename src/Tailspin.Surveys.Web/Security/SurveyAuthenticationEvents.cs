@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.IdentityModel.Tokens;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -15,10 +14,7 @@ using Tailspin.Surveys.Common.Configuration;
 using Tailspin.Surveys.Data.DataModels;
 using Tailspin.Surveys.Security;
 using Tailspin.Surveys.Web.Logging;
-using System.Security;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
-using System.Globalization;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Tailspin.Surveys.Web.Security
@@ -113,7 +109,7 @@ namespace Tailspin.Surveys.Web.Security
                 await tenantManager.CreateAsync(tenant)
                     .ConfigureAwait(false);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.SignUpTenantFailed(principal.GetObjectIdentifierValue(), issuerValue, ex);
                 throw;
@@ -245,22 +241,23 @@ namespace Tailspin.Surveys.Web.Security
         {
             var principal = context.Ticket.Principal;
 
-            //
-            var request = context.HttpContext.Request;
-            var currentUri = UriHelper.BuildAbsolute(request.Scheme, request.Host, request.PathBase, request.Path);
-            var properties = context.Properties;
+            // As AcquireTokenByAuthorizationCodeAsync is asynchronous we want to tell ASP.NET core that we are handing the code
+            // even if it's not done yet, so that it does not concurrently call the Token endpoint. (otherwise there will be a
+            // race condition ending-up in an error from Azure AD telling "code already redeemed")
+            context.HandleCodeRedemption();
 
             //
 
             var surveysTokenService = context.HttpContext.RequestServices.GetService<ISurveysTokenService>();
             try
             {
-                await surveysTokenService.RequestTokenAsync(
+                var result = await surveysTokenService.RequestTokenAsync(
                     principal,
                     context.ProtocolMessage.Code,
-                    currentUri,
                     _adOptions.WebApiResourceId)
                     .ConfigureAwait(false);
+
+                context.HandleCodeRedemption(null, result.IdToken);
             }
             catch
             {

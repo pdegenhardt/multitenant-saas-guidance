@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.Identity.Client;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
 
 namespace Tailspin.Surveys.Web.Security
 {
@@ -25,17 +25,15 @@ namespace Tailspin.Surveys.Web.Security
         /// </summary>
         /// <param name="claimsPrincipal">A <see cref="ClaimsPrincipal"/> for the signed in user</param>
         /// <param name="authorizationCode">a string authorization code obtained when the user signed in</param>
-        /// <param name="redirectUri">The Uri of the application requesting the access token</param>
         /// <param name="resource">The resouce identifier of the target resource</param>
-        /// <returns>A <see cref="System.Threading.Tasks.Task{Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationResult}"/>.</returns>
+        /// <returns>A <see cref="System.Threading.Tasks.Task{AuthenticationResult}"/>.</returns>
         Task<AuthenticationResult> RequestTokenAsync(
             ClaimsPrincipal claimsPrincipal,
             string authorizationCode,
-            string redirectUri,
             string resource);
 
         /// <summary>
-        /// This method clears the user's <see cref="Microsoft.IdentityModel.Clients.ActiveDirectory.TokenCache"/>.
+        /// This method clears the user's <see cref="TokenCache"/>.
         /// </summary>
         /// <param name="claimsPrincipal">The <see cref="System.Security.Claims.ClaimsPrincipal"/> for the user</param>
         /// <returns>A <see cref="System.Threading.Tasks.Task"/></returns>
