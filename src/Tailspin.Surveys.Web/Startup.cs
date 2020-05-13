@@ -24,15 +24,14 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.CookiePolicy;
 
 namespace Tailspin.Surveys.Web
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public Startup(IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
-            InitializeLogging(loggerFactory);
-
             // Setup configuration sources.
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
@@ -77,8 +76,30 @@ namespace Tailspin.Surveys.Web
             // This will only add the LocalCache implementation of IDistributedCache if there is not an IDistributedCache already registered.
             services.AddMemoryCache();
 
-            //services.AddAuthentication(sharedOptions =>
-            //    sharedOptions.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme);
+            services.AddAuthentication(sharedOptions =>
+                sharedOptions.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme);
+
+            // Add cookie-based authentication to the request pipeline.
+            services.AddAuthentication(
+                new CookieAuthenticationOptions
+            {
+                AccessDeniedPath = "/Home/Forbidden",
+                ExpireTimeSpan = TimeSpan.FromHours(1), // The default setting for cookie expiration is 14 days. SlidingExpiration is set to true by default
+                SlidingExpiration = true
+            });
+
+            // Add OpenIdConnect middleware so you can login using Azure AD.
+            app.UseOpenIdConnectAuthentication(new OpenIdConnectOptions
+            {
+                ClientId = configOptions.AzureAd.ClientId,
+                ClientSecret = configOptions.AzureAd.ClientSecret, // for code flow
+                Authority = Constants.AuthEndpointPrefix,
+                ResponseType = OpenIdConnectResponseType.CodeIdToken,
+                SignedOutRedirectUri = configOptions.AzureAd.PostLogoutRedirectUri,
+                SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme,
+                TokenValidationParameters = new TokenValidationParameters { ValidateIssuer = false },
+                Events = new SurveyAuthenticationEvents(configOptions.AzureAd, loggerFactory),
+            });
 
             services.AddAuthorization(options =>
             {
@@ -156,30 +177,6 @@ namespace Tailspin.Surveys.Web
             // Add static files to the request pipeline.
             app.UseStaticFiles();
 
-            // Add cookie-based authentication to the request pipeline.
-            app.UseCookieAuthentication(new CookieAuthenticationOptions {
-                AutomaticAuthenticate = true,
-                AutomaticChallenge = true,
-                AccessDeniedPath = "/Home/Forbidden",
-                CookieSecure = CookieSecurePolicy.Always,
-
-                // The default setting for cookie expiration is 14 days. SlidingExpiration is set to true by default
-                ExpireTimeSpan = TimeSpan.FromHours(1),
-                SlidingExpiration = true
-            });
-
-            // Add OpenIdConnect middleware so you can login using Azure AD.
-            app.UseOpenIdConnectAuthentication(new OpenIdConnectOptions {
-                ClientId = configOptions.AzureAd.ClientId,
-                ClientSecret = configOptions.AzureAd.ClientSecret, // for code flow
-                Authority = Constants.AuthEndpointPrefix,
-                ResponseType = OpenIdConnectResponseType.CodeIdToken,
-                PostLogoutRedirectUri = configOptions.AzureAd.PostLogoutRedirectUri,
-                SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme,
-                TokenValidationParameters = new TokenValidationParameters { ValidateIssuer = false },
-                Events = new SurveyAuthenticationEvents(configOptions.AzureAd, loggerFactory),
-            });
-
             // Add MVC to the request pipeline.
             app.UseMvc(routes =>
             {
@@ -190,11 +187,6 @@ namespace Tailspin.Surveys.Web
                 // Uncomment the following line to add a route for porting Web API 2 controllers.
                 // routes.MapWebApiRoute("DefaultApi", "api/{controller}/{id?}");
             });
-        }
-
-        private void InitializeLogging(ILoggerFactory loggerFactory)
-        {
-            loggerFactory.AddDebug(Microsoft.Extensions.Logging.LogLevel.Information);
         }
     }
 }

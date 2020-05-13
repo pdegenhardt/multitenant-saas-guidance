@@ -21,7 +21,7 @@ namespace Tailspin.Surveys.Web.Security
         {
             Guard.ArgumentNotNull(context, nameof(context));
 
-            string signupValue;
+            string signupValue = string.Empty;
             // Check the HTTP context and convert to string
             if ((context.Ticket == null) ||
                 (!context.Ticket.Properties.Items.TryGetValue("signup", out signupValue)))

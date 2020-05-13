@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Tailspin.Surveys.Data.DataModels;
@@ -24,9 +26,8 @@ namespace Tailspin.Surveys.WebAPI
     /// </summary>
     public class Startup
     {
-        public Startup(IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public Startup(IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
-            InitializeLogging(loggerFactory);
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json");
@@ -103,7 +104,7 @@ namespace Tailspin.Surveys.WebAPI
                 app.UseDatabaseErrorPage();
             }
 
-            app.UseJwtBearerAuthentication(new JwtBearerOptions {
+            app.UseMiddleware<AuthenticationMiddleware>(new JwtBearerOptions {
                 Audience = configOptions.AzureAd.WebApiResourceId,
                 Authority = Constants.AuthEndpointPrefix,
                 TokenValidationParameters = new TokenValidationParameters {
@@ -111,13 +112,10 @@ namespace Tailspin.Surveys.WebAPI
                 },
                 Events= new SurveysJwtBearerEvents(loggerFactory.CreateLogger<SurveysJwtBearerEvents>())
             });
-            
+            app.UseAuthentication();
+
             // Add MVC to the request pipeline.
             app.UseMvc();
-        }
-        private void InitializeLogging(ILoggerFactory loggerFactory)
-        {
-            loggerFactory.AddDebug(LogLevel.Information);
         }
     }
 }

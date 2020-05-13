@@ -11,6 +11,7 @@ using Tailspin.Surveys.Data.DataModels;
 using Tailspin.Surveys.Security;
 using Tailspin.Surveys.WebAPI.Logging;
 using Microsoft.IdentityModel.Tokens;
+using System.IO;
 
 namespace Tailspin.Surveys.WebAPI
 {
@@ -46,9 +47,9 @@ namespace Tailspin.Surveys.WebAPI
         /// <returns>A task</returns>
         public override async Task TokenValidated(TokenValidatedContext context)
         {
-            var principal = context.Ticket.Principal;
-            var tenantManager = context.HttpContext.RequestServices.GetService<TenantManager>();
-            var userManager = context.HttpContext.RequestServices.GetService<UserManager>();
+            var principal = context.Principal;
+            TenantManager tenantManager = context.HttpContext.RequestServices.GetService<TenantManager>();
+            UserManager userManager = context.HttpContext.RequestServices.GetService<UserManager>();
             var issuerValue = principal.GetIssuerValue();
             var tenant = await tenantManager.FindByIssuerValueAsync(issuerValue);
 
@@ -68,7 +69,7 @@ namespace Tailspin.Surveys.WebAPI
             identity.AddClaim(new Claim(SurveyClaimTypes.SurveyTenantIdClaimType, registeredUser.TenantId.ToString()));
 
             // Adding new Claim for Email
-            var email = principal.FindFirst(ClaimTypes.Upn)?.Value;
+            string email = principal.FindFirst(ClaimTypes.Upn)?.Value;
             if (!string.IsNullOrWhiteSpace(email))
             {
                 identity.AddClaim(new Claim(ClaimTypes.Email, email));

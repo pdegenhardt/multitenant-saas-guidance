@@ -74,7 +74,7 @@ namespace Tailspin.Surveys.TokenStorage
             byte[] cacheData = _distributedCache.Get(_cacheKey);
             if (cacheData != null)
             {
-                this.Deserialize(_protector.Unprotect(cacheData));
+                this.DeserializeMsalV2(_protector.Unprotect(cacheData));
                 _logger.TokensRetrievedFromStore(_cacheKey);
             }
         }
@@ -91,7 +91,7 @@ namespace Tailspin.Surveys.TokenStorage
                 {
                     if (this.Count > 0)
                     {
-                        _distributedCache.Set(_cacheKey, _protector.Protect(this.Serialize()));
+                        _distributedCache.Set(_cacheKey, _protector.Protect(this.SerializeMsalV2()));
                         _logger.TokensWrittenToStore(args.ClientId, args.UniqueId, args.Resource);
                     }
                     else

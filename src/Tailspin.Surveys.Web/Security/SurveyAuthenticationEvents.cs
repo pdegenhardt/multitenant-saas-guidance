@@ -190,7 +190,7 @@ namespace Tailspin.Surveys.Web.Security
         /// <returns>a completed <see cref="System.Threading.Tasks.Task"/></returns>
         public override async Task TokenValidated(TokenValidatedContext context)
         {
-            var principal = context.Ticket.Principal;
+            var principal = context.Principal;
             var userId = principal.GetObjectIdentifierValue();
             var tenantManager = context.HttpContext.RequestServices.GetService<TenantManager>();
             var userManager = context.HttpContext.RequestServices.GetService<UserManager>();
