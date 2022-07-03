@@ -6,6 +6,6 @@ namespace Tailspin.Surveys.Security.Policy
     public class PolicyNames
     {
         public const string RequireSurveyAdmin = "RequireSurveyAdmin";
-        public const string RequireSurveyCreator = "RequireSurveyCreator";
+        //public const string RequireSurveyCreator = "RequireSurveyCreator";
     }
 }

@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
@@ -48,14 +49,14 @@ namespace Tailspin.Surveys.Web.Services
                     });
         }
 
-        public async Task<UserSurveysDTO> GetSurveysForUserAsync(int userId)
+        public async Task<UserSurveysDTO> GetSurveysForUserAsync(int userId, ClaimsPrincipal principal)
         {
             return await _downstreamWebApi.CallWebApiForUserAsync<UserSurveysDTO>(_serviceName,
                     options =>
                     {
                         options.HttpMethod = HttpMethod.Get;
                         options.RelativePath = $"users/{userId}/surveys";
-                    });
+                    }, principal);
         }
 
         public async Task<TenantSurveysDTO> GetSurveysForTenantAsync(int tenantId)

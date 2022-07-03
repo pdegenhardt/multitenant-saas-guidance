@@ -60,9 +60,9 @@ namespace Tailspin.Surveys.Web.Controllers
                 _logger.GetSurveysForUserOperationStarted(actionName, user, issuerValue);
 
                 // The SurveyService.GetSurveysForUserAsync returns a UserSurveysDTO that has properties for Published, Own, and Contribute
-                var result = await _surveyService.GetSurveysForUserAsync(userId);
+                var result = await _surveyService.GetSurveysForUserAsync(userId, User);
                 // If the user is in the creator role, the view shows a "Create Survey" button.
-                var authResult = await _authorizationService.AuthorizeAsync(User, PolicyNames.RequireSurveyCreator);
+                var authResult = await _authorizationService.AuthorizeAsync(User, PolicyNames.RequireSurveyAdmin);
                 ViewBag.IsUserCreator = authResult?.Succeeded;
                 _logger.GetSurveysForUserOperationSucceeded(actionName, user, issuerValue);
                 return View(result);
@@ -112,7 +112,7 @@ namespace Tailspin.Surveys.Web.Controllers
         /// which is defined in <see cref="SurveyCreatorRequirement"/>.
         /// </summary>
         /// <returns>A view with form fields ued to create a <see cref="Survey"/></returns>
-        [Authorize(Policy = PolicyNames.RequireSurveyCreator)]
+        [Authorize(Policy = PolicyNames.RequireSurveyAdmin)]
         public IActionResult Create()
         {
             var survey = new SurveyDTO();
@@ -126,7 +126,7 @@ namespace Tailspin.Surveys.Web.Controllers
         /// <param name="survey">The <see cref="SurveyDTO"/> instance that contains the fields necessary to create a <see cref="Survey"/></param>
         /// <returns>A view that either shows validation errors or a redirection to the Survey Edit experience</returns>
         [HttpPost]
-        [Authorize(Policy = PolicyNames.RequireSurveyCreator)]
+        [Authorize(Policy = PolicyNames.RequireSurveyAdmin)]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(SurveyDTO survey)
         {

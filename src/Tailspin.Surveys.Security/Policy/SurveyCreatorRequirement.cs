@@ -11,16 +11,16 @@ namespace Tailspin.Surveys.Security.Policy
     /// This <see cref="IAuthorizationRequirement"/> functions as an <see cref="IAuthorizationHandler"/> that
     /// validates that the signed in user has either SurveyCreator or SurveyAdmin role claim.
     /// </summary>
-    public class SurveyCreatorRequirement : AuthorizationHandler<SurveyCreatorRequirement>, IAuthorizationRequirement
-    {
-        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, SurveyCreatorRequirement requirement)
-        {
-            if (context.User.HasClaim(ClaimTypes.Role, Roles.SurveyAdmin) || context.User.HasClaim(ClaimTypes.Role, Roles.SurveyCreator))
-            {
-                context.Succeed(requirement);
-            }
+    //public class SurveyCreatorRequirement : AuthorizationHandler<SurveyCreatorRequirement>, IAuthorizationRequirement
+    //{
+    //    protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, SurveyCreatorRequirement requirement)
+    //    {
+    //        if (context.User.HasClaim(ClaimTypes.Role, Roles.SurveyAdmin) || context.User.HasClaim(ClaimTypes.Role, Roles.SurveyCreator))
+    //        {
+    //            context.Succeed(requirement);
+    //        }
 
-            return Task.FromResult(0);
-        }
-    }
+    //        return Task.FromResult(0);
+    //    }
+    //}
 }

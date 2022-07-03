@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Tailspin.Surveys.Data.DataModels;
 using Tailspin.Surveys.Data.DTOs;
@@ -17,7 +18,7 @@ namespace Tailspin.Surveys.Web.Services
     public interface ISurveyService
     {
         Task<SurveyDTO> GetSurveyAsync(int id);
-        Task<UserSurveysDTO> GetSurveysForUserAsync(int userId);
+        Task<UserSurveysDTO> GetSurveysForUserAsync(int userId, ClaimsPrincipal principal);
         Task<TenantSurveysDTO> GetSurveysForTenantAsync(int tenantId);
         Task<SurveyDTO> CreateSurveyAsync(SurveyDTO survey);
         Task<SurveyDTO> UpdateSurveyAsync(SurveyDTO survey);

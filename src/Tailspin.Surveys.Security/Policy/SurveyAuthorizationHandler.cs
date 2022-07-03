@@ -27,21 +27,27 @@ namespace Tailspin.Surveys.Security.Policy
             = new Dictionary<OperationAuthorizationRequirement, Func<List<UserPermissionType>, bool>>
 
             {
-                { Operations.Create, x => x.Contains(UserPermissionType.Creator) },
+                { Operations.Create, x => x.Contains(UserPermissionType.Creator) ||
+                                        x.Contains(UserPermissionType.Admin) },
 
                 { Operations.Read, x => x.Contains(UserPermissionType.Creator) ||
+                                        x.Contains(UserPermissionType.Admin)  ||
                                         x.Contains(UserPermissionType.Reader) ||
                                         x.Contains(UserPermissionType.Contributor) ||
                                         x.Contains(UserPermissionType.Owner) },
 
                 { Operations.Update, x => x.Contains(UserPermissionType.Contributor) ||
-                                        x.Contains(UserPermissionType.Owner) },
+                                        x.Contains(UserPermissionType.Owner) ||
+                                        x.Contains(UserPermissionType.Admin)  },
 
-                { Operations.Delete, x => x.Contains(UserPermissionType.Owner) },
+                { Operations.Delete, x => x.Contains(UserPermissionType.Owner) ||
+                                        x.Contains(UserPermissionType.Admin)  },
 
-                { Operations.Publish, x => x.Contains(UserPermissionType.Owner) },
+                { Operations.Publish, x => x.Contains(UserPermissionType.Owner) ||
+                                        x.Contains(UserPermissionType.Admin)  },
 
-                { Operations.UnPublish, x => x.Contains(UserPermissionType.Owner) }
+                { Operations.UnPublish, x => x.Contains(UserPermissionType.Owner) ||
+                                        x.Contains(UserPermissionType.Admin)  }
             };
 
         private enum UserPermissionType { Admin, Creator, Reader, Contributor, Owner };

@@ -41,13 +41,13 @@ namespace Tailspin.Surveys.WebAPI
 
             services.AddAuthorization(options =>
             {
-                options.AddPolicy(PolicyNames.RequireSurveyCreator,
-                    policy =>
-                    {
-                        policy.AddRequirements(new SurveyCreatorRequirement());
-                        policy.RequireAuthenticatedUser(); // Adds DenyAnonymousAuthorizationRequirement 
-                        policy.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme);
-                    });
+                //options.AddPolicy(PolicyNames.RequireSurveyCreator,
+                //    policy =>
+                //    {
+                //        policy.AddRequirements(new SurveyCreatorRequirement());
+                //        policy.RequireAuthenticatedUser(); // Adds DenyAnonymousAuthorizationRequirement 
+                //        policy.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme);
+                //    });
                 options.AddPolicy(PolicyNames.RequireSurveyAdmin,
                     policy =>
                     {
@@ -96,11 +96,11 @@ namespace Tailspin.Surveys.WebAPI
         // Configure is called after ConfigureServices is called.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ApplicationDbContext dbContext, ILoggerFactory loggerFactory)
         {
-            if (env.IsDevelopment())
-            {
+            //if (env.IsDevelopment())
+            //{
                 app.UseDeveloperExceptionPage();
                 app.UseMigrationsEndPoint();
-            }
+            //}
 
             app.UseHttpsRedirection();
             app.UseRouting();

@@ -5,8 +5,8 @@ namespace Tailspin.Surveys.Security
 {
     public class Roles
     {
-        public static readonly string SurveyAdmin = "SurveyAdmin";
-        public static readonly string SurveyCreator = "SurveyCreator";
-        public static readonly string SurveyReader = "SurveyReader";
+        public static readonly string SurveyAdmin = "IngredientAdmin";
+        public static readonly string SurveyCreator = "IngredientCreator";
+        public static readonly string SurveyReader = "IngredientReader";
     }
 }

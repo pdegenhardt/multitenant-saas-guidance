@@ -48,7 +48,7 @@ namespace MultiTentantSurveyAppTests
         public async Task Index_GetsUserSurveys()
         {
             var resultUserSurveys = A.Fake<UserSurveysDTO>();
-            A.CallTo(() => _surveyService.GetSurveysForUserAsync(54321)).Returns(Task.FromResult(resultUserSurveys));
+            A.CallTo(() => _surveyService.GetSurveysForUserAsync(54321, null)).Returns(Task.FromResult(resultUserSurveys));
 
             _target.ControllerContext = CreateActionContextWithUserPrincipal("54321", "unregistereduser@contoso.com");
             var result = await _target.Index();

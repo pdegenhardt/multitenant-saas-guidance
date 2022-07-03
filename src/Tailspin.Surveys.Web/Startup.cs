@@ -49,15 +49,15 @@ namespace Tailspin.Surveys.Web
 
             services.AddAuthorization(options =>
             {
-                options.AddPolicy(PolicyNames.RequireSurveyCreator,
-                    policy =>
-                    {
-                        policy.AddRequirements(new SurveyCreatorRequirement());
-                        policy.RequireAuthenticatedUser(); // Adds DenyAnonymousAuthorizationRequirement 
-                        // By adding the CookieAuthenticationDefaults.AuthenticationScheme,
-                        // if an authenticated user is not in the appropriate role, they will be redirected to the "forbidden" experience.
-                        policy.AddAuthenticationSchemes(CookieAuthenticationDefaults.AuthenticationScheme);
-                    });
+                //options.AddPolicy(PolicyNames.RequireSurveyCreator,
+                //    policy =>
+                //    {
+                //        policy.AddRequirements(new SurveyCreatorRequirement());
+                //        policy.RequireAuthenticatedUser(); // Adds DenyAnonymousAuthorizationRequirement 
+                //        // By adding the CookieAuthenticationDefaults.AuthenticationScheme,
+                //        // if an authenticated user is not in the appropriate role, they will be redirected to the "forbidden" experience.
+                //        policy.AddAuthenticationSchemes(CookieAuthenticationDefaults.AuthenticationScheme);
+                //    });
 
                 options.AddPolicy(PolicyNames.RequireSurveyAdmin,
                     policy =>
@@ -79,15 +79,15 @@ namespace Tailspin.Surveys.Web
                         options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                         options.Events.OnTokenValidated += options.Events.TokenValidated;
                     })
-               .EnableTokenAcquisitionToCallDownstreamApi()
+               .EnableTokenAcquisitionToCallDownstreamApi(new[] { "https://kappa10twenty.orbiting.io/api/.default" })
                .AddDownstreamWebApi(configOptions.SurveyApi.Name, Configuration.GetSection("SurveyApi"))
-               .AddDistributedTokenCaches();
+               .AddInMemoryTokenCaches();
 
-            services.AddStackExchangeRedisCache(options =>
-            {
-                options.Configuration = configOptions.Redis.Configuration;
-                options.InstanceName = "TokenCache";
-            });
+            //services.AddStackExchangeRedisCache(options =>
+            //{
+            //    options.Configuration = configOptions.Redis.Configuration;
+            //    options.InstanceName = "TokenCache";
+            //});
 
             // Add Entity Framework services to the services container.
             services.AddEntityFrameworkSqlServer()
@@ -124,18 +124,18 @@ namespace Tailspin.Surveys.Web
 
             // Configure the HTTP request pipeline.
             // Add the following to the request pipeline only in development environment.
-            if (env.IsDevelopment())
-            {
+            //if (env.IsDevelopment())
+            //{
                 app.UseDeveloperExceptionPage();
                 app.UseMigrationsEndPoint();
-            }
-            else
-            {
-                // Add Error handling middleware which catches all application specific errors and
-                // sends the request to the following path or controller action.
-                app.UseExceptionHandler("/Home/Error");
-                app.UseHsts();
-            }
+            //}
+            //else
+            //{
+            //    // Add Error handling middleware which catches all application specific errors and
+            //    // sends the request to the following path or controller action.
+            //    app.UseExceptionHandler("/Home/Error");
+            //    app.UseHsts();
+            //}
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();

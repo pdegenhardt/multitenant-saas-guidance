@@ -141,7 +141,7 @@ namespace Tailspin.Surveys.WebAPI.Controllers
         /// <param name="item">An <see cref="SurveyDTO"/> that contains the values used to create and persist a new <see cref="Survey"/></param>
         /// <returns>A <see cref="CreatedAtRouteResult"/> of the newly created <see cref="Survey"/> if successfully persisted</returns>
         [HttpPost("surveys")]
-        [Authorize(Policy = PolicyNames.RequireSurveyCreator)]
+        [Authorize(Policy = PolicyNames.RequireSurveyAdmin)]
         public async Task<IActionResult> Create([FromBody] SurveyDTO item)
         {
             if (item == null)
